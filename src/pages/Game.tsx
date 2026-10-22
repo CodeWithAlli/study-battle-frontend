@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase'
 import { calcularDelta, type Multiplicador } from '../lib/scoring'
 import { MultiplierButtons } from '../components/MultiplierButtons'
 import { OptionButton } from '../components/OptionButton'
-import { Timer } from '../components/Timer'
 
 type Question = {
   id: string

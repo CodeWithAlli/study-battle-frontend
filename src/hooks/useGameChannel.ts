@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export type Player = {
   id: string
