@@ -48,8 +48,16 @@ export default function Game() {
     }
     fetchGameData()
 
-    const channel = supabase.channel(`game-${gameId}`)
+        const channel = supabase.channel(`game-${gameId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${gameId}` }, (payload) => {
+        
+        // 🔥 NUEVO: Si el profesor terminó la partida, el alumno salta a resultados
+        if (payload.new.status === 'finished' && !isHost) {
+          navigate(`/results/${gameId}`)
+          return
+        }
+
+        // Si cambia la pregunta, reiniciamos el temporizador y los estados
         if (payload.new.current_question_index !== currentIndex) {
           setCurrentIndex(payload.new.current_question_index)
           setTimerSeconds(20)
@@ -95,7 +103,8 @@ export default function Game() {
       question_id: preguntaActual.id,
       multiplier: multiplier,
       is_correct: esCorrecta,
-      delta: delta
+      delta: delta,
+      selected_option: index 
     })
 
     const { data: player } = await supabase.from('players').select('score').eq('id', playerId).single()

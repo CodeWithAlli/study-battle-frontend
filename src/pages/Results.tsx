@@ -1,11 +1,23 @@
 import { useParams, Link } from 'react-router-dom'
-import { useGameResults } from '../hooks/useGameResults'
+import { useGameResults, obtenerRepasoAlumno } from '../hooks/useGameResults'
 import { Podium } from '../components/Podium'
 import { exportarResultados } from '../lib/exportCsv'
+import { useState, useEffect } from 'react'
+import { ReviewCard } from '../components/ReviewCard'
 
 export default function Results() {
   const { gameId } = useParams<{ gameId: string }>()
   const { resultados, loading } = useGameResults(gameId ?? null)
+
+  const isHost = localStorage.getItem('isHost') === 'true'
+  const playerId = localStorage.getItem('playerId')
+  const [repaso, setRepaso] = useState<any[]>([])
+
+  useEffect(() => {
+    if (!isHost && playerId && gameId) {
+      obtenerRepasoAlumno(gameId, playerId).then(setRepaso)
+    }
+  }, [gameId, isHost, playerId])
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Calculando resultados... ⏳</div>
 
@@ -78,6 +90,11 @@ export default function Results() {
             </table>
           </div>
         </div>
+
+        {/* ESTA ES LA PARTE QUE HACE QUE SALGA EL REVIEW CARD */}
+        {!isHost && repaso.length > 0 && (
+          <ReviewCard items={repaso} />
+        )}
 
         <div className="text-center pt-8">
           <Link to="/" className="text-slate-500 hover:text-blue-700 font-medium underline transition-colors">

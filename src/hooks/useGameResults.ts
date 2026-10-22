@@ -102,3 +102,34 @@ export function useGameResults(gameId: string | null) {
 
   return { resultados, loading }
 }
+export async function obtenerRepasoAlumno(gameId: string, playerId: string) {
+  // 1. Traer preguntas
+  const { data: preguntas } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('order_index', { ascending: true })
+  
+  // 2. Traer respuestas del alumno
+  const { data: respuestas } = await supabase
+    .from('answers')
+    .select('*')
+    .eq('player_id', playerId)
+
+  if (!preguntas) return []
+
+  // 3. Cruzar datos
+  return preguntas.map(p => {
+    const resp = respuestas?.find(r => r.question_id === p.id)
+    
+    return {
+      question_text: p.question_text,
+      options: p.options,
+      correct_index: p.correct_index,
+      justification: p.justification,
+      // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Leemos 'selected_option'
+      player_answer: resp ? resp.selected_option : null, 
+      is_correct: resp ? resp.is_correct : false
+    }
+  })
+}
