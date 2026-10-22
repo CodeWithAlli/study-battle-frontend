@@ -9,7 +9,7 @@ import Results from './pages/Results'
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-900 text-white">
+      <div className="min-h-screen font-sans">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/create" element={<CreateGame />} />

@@ -50,15 +50,10 @@ export default function Game() {
 
     const channel = supabase.channel(`game-${gameId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${gameId}` }, (payload) => {
-        // Solo reiniciamos si el índice de la pregunta cambió
         if (payload.new.current_question_index !== currentIndex) {
           setCurrentIndex(payload.new.current_question_index)
-          
-          // Forzamos el reinicio a 20 segundos
           setTimerSeconds(20)
           setTimeLeft(20) 
-          
-          // Limpiamos estados para la nueva pregunta
           setMultiplier(null)
           setSelectedOption(null)
           setIsRevealed(false)
@@ -71,7 +66,6 @@ export default function Game() {
 
   const preguntaActual = preguntas[currentIndex]
 
-  // Lógica del contador (corre para todos, pero se detiene al revelar)
   useEffect(() => {
     if (isRevealed || !preguntaActual) return
     if (timeLeft <= 0) {
@@ -89,7 +83,7 @@ export default function Game() {
   const handleSelectOption = async (index: number) => {
     if (!multiplier) return alert('Primero elige un multiplicador (x1, x2 o x3)')
     setSelectedOption(index)
-    setIsRevealed(true) // Se revela para el alumno en el momento que responde
+    setIsRevealed(true) 
 
     if (isHost || !playerId) return 
 
@@ -114,7 +108,7 @@ export default function Game() {
     if (currentIndex < preguntas.length - 1) {
       await supabase.from('games').update({ 
         current_question_index: currentIndex + 1,
-        question_started_at: new Date().toISOString() // 🔥 Guardamos la hora
+        question_started_at: new Date().toISOString()
       }).eq('id', gameId)
     } else {
       await supabase.from('games').update({ status: 'finished' }).eq('id', gameId)
@@ -122,76 +116,63 @@ export default function Game() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-white">Cargando juego...</div>
-  if (!preguntaActual) return <div className="p-8 text-center text-white">Esperando preguntas...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Cargando preguntas...</div>
+  if (!preguntaActual) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Esperando preguntas...</div>
 
-    return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-800 p-4">
       <div className="w-full max-w-3xl">
         
-        <div className="flex justify-between items-center mb-2 bg-gray-800 p-4 rounded-t-xl border border-gray-700">
-          <span className="font-bold text-lg">Pregunta {currentIndex + 1} de {preguntas.length}</span>
-          <span className={`px-4 py-1 rounded-lg text-sm font-bold ${isHost ? 'bg-purple-600' : 'bg-cyan-600'}`}>
+        {/* Cabecera */}
+        <div className="flex justify-between items-center mb-2 bg-white p-4 rounded-t-2xl border border-slate-200 shadow-sm">
+          <span className="font-bold text-slate-600">Pregunta {currentIndex + 1} de {preguntas.length}</span>
+          <span className={`px-4 py-1 rounded-lg text-sm font-bold ${isHost ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
             {playerName} {isHost ? '(Profesor)' : '(Alumno)'}
           </span>
         </div>
 
-        {/* TEMPORIZADOR: Barra + Número exacto para ambos */}
-        <div className="mt-4 mb-2 flex items-center gap-4">
-          <div className="flex-1 bg-gray-900 rounded-full h-4 overflow-hidden border border-gray-700">
+        {/* Barra de Tiempo */}
+        <div className="mb-6 flex items-center gap-4 bg-white px-4 py-3 border-x border-slate-200">
+          <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
             <div 
               className={`h-full transition-all duration-1000 ease-linear ${timeLeft > 10 ? 'bg-emerald-500' : timeLeft > 5 ? 'bg-orange-500' : 'bg-red-500'}`}
               style={{ width: `${(timeLeft / timerSeconds) * 100}%` }}
             />
           </div>
-          <span className="font-mono text-xl font-bold w-10 text-right">
-            {timeLeft}s
-          </span>
+          <span className="font-mono text-lg font-bold w-10 text-right text-slate-700">{timeLeft}s</span>
         </div>
 
-        <div className="bg-gray-800 p-8 rounded-b-2xl shadow-2xl border-x border-b border-gray-700 mb-6">
-          <h2 className="text-3xl font-bold mb-8 text-center">{preguntaActual.question_text}</h2>
+        {/* Tarjeta de Pregunta */}
+        <div className="bg-white p-8 rounded-b-2xl shadow-md border-x border-b border-slate-200 mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-slate-900">{preguntaActual.question_text}</h2>
 
           {/* VISTA DEL ALUMNO */}
           {!isHost && (
             <>
-              {/* 1. Elegir multiplicador (x1, x2, x3) */}
               {!multiplier && !isRevealed && (
                 <div>
-                  <p className="text-center text-gray-400 mb-2 animate-pulse">Elige tu nivel de riesgo:</p>
+                  <p className="text-center text-slate-500 mb-4 font-medium">Elige tu nivel de riesgo:</p>
                   <MultiplierButtons onSelect={handleSelectMultiplier} disabled={false} />
                 </div>
               )}
 
-              {/* 2. Elegir respuesta */}
               {multiplier && !isRevealed && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {preguntaActual.options.map((opt, i) => (
                     <OptionButton 
-                      key={i} 
-                      text={opt} 
-                      index={i} 
-                      selected={selectedOption === i} 
-                      onClick={() => handleSelectOption(i)} 
-                      disabled={selectedOption !== null} 
+                      key={i} text={opt} index={i} selected={selectedOption === i} 
+                      onClick={() => handleSelectOption(i)} disabled={selectedOption !== null} 
                     />
                   ))}
                 </div>
               )}
 
-              {/* 3. Revelación */}
               {isRevealed && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {preguntaActual.options.map((opt, i) => (
                     <OptionButton 
-                      key={i} 
-                      text={opt} 
-                      index={i} 
-                      selected={selectedOption === i} 
-                      onClick={() => {}} 
-                      disabled={true} 
-                      correctIndex={preguntaActual.correct_index} 
-                      revealed={true} 
+                      key={i} text={opt} index={i} selected={selectedOption === i} 
+                      onClick={() => {}} disabled={true} correctIndex={preguntaActual.correct_index} revealed={true} 
                     />
                   ))}
                 </div>
@@ -204,39 +185,29 @@ export default function Game() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {preguntaActual.options.map((opt, i) => (
                 <OptionButton 
-                  key={i} 
-                  text={opt} 
-                  index={i} 
-                  selected={false} 
-                  onClick={() => {}} 
-                  disabled={true} 
-                  correctIndex={preguntaActual.correct_index} 
-                  revealed={isRevealed} 
+                  key={i} text={opt} index={i} selected={false} onClick={() => {}} disabled={true} 
+                  correctIndex={preguntaActual.correct_index} revealed={isRevealed} 
                 />
               ))}
             </div>
           )}
         </div>
 
-        {/* BOTÓN DE SIGUIENTE (Solo profe) */}
+        {/* Botón Siguiente (Profesor) */}
         {isHost && isRevealed && (
           <div className="text-center animate-fade-in">
-            <button 
-              onClick={handleNextQuestion} 
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 px-12 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/30"
-            >
+            <button onClick={handleNextQuestion} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 px-12 rounded-xl transition-colors shadow-md">
               {currentIndex < preguntas.length - 1 ? 'Siguiente Pregunta ➡️' : 'Ver Resultados 🏆'}
             </button>
           </div>
         )}
 
-        {/* MENSAJE PARA EL ALUMNO */}
+        {/* Mensaje Alumno */}
         {!isHost && isRevealed && (
-          <p className="text-center text-gray-400 mt-4 animate-pulse">
+          <p className="text-center text-slate-500 font-medium mt-4 animate-pulse">
             Esperando a que el profesor pase a la siguiente...
           </p>
         )}
-
       </div>
     </div>
   )

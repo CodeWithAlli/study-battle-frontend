@@ -17,18 +17,15 @@ export default function Lobby() {
 
     if (!gameId) return
 
-    // Cargar código de sala inicial
     supabase.from('games').select('code, status').eq('id', gameId).single().then(({ data }) => {
       if (data) {
         setGameCode(data.code)
-        // Si el alumno recarga la página y el juego ya empezó, lo mandamos a jugar
         if (data.status === 'playing' && !hostStatus) {
           navigate(`/game/${gameId}`)
         }
       }
     })
 
-    // ESCUCHAR EL MOMENTO EN QUE EL PROFE LE DA A EMPEZAR
     const channel = supabase.channel(`lobby-status-${gameId}`)
       .on('postgres_changes', 
         { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${gameId}` }, 
@@ -37,51 +34,47 @@ export default function Lobby() {
             navigate(`/game/${gameId}`)
           }
         }
-      )
-      .subscribe()
+      ).subscribe()
 
     return () => { supabase.removeChannel(channel) }
   }, [gameId, navigate])
 
   const handleStartGame = async () => {
     if (players.length === 0) return alert('Necesitas al menos 1 jugador para empezar.')
-    
-    // Al cambiar el status a 'playing', la app de los alumnos salta sola a Game.tsx
     await supabase.from('games').update({ status: 'playing' }).eq('id', gameId)
-    
     navigate(`/game/${gameId}`)
   }
 
-  if (loading) return <div className="p-8 text-center text-white">Cargando lobby...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Cargando sala...</div>
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <div className="bg-gray-800 p-8 rounded-3xl shadow-2xl border border-gray-700 w-full max-w-2xl">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 text-slate-800">
+      <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 w-full max-w-2xl">
         
-        <div className="text-center mb-8">
-          <p className="text-gray-400 text-lg">Código de la sala</p>
-          <h1 className="text-6xl font-black font-mono tracking-widest text-emerald-400 my-2">
+        <div className="text-center mb-8 border-b border-slate-100 pb-6">
+          <p className="text-slate-500 font-medium mb-1">Código de la sala</p>
+          <h1 className="text-6xl font-black tracking-widest text-blue-700 my-2 font-mono">
             {gameCode || '...'}
           </h1>
-          <p className="text-sm text-gray-400">Comparte este código con tus alumnos</p>
+          <p className="text-sm text-slate-400">Comparte este código con tus alumnos</p>
         </div>
 
-        <div className="bg-gray-900 rounded-xl p-4 min-h-[200px] border border-gray-700">
-          <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-            <h2 className="text-xl font-bold">Jugadores conectados</h2>
-            <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-bold">
+        <div className="bg-slate-50 rounded-xl p-4 min-h-[200px] border border-slate-200">
+          <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200">
+            <h2 className="text-lg font-bold text-slate-700">Jugadores conectados</h2>
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
               {players.length} en línea
             </span>
           </div>
 
           {players.length === 0 ? (
-            <p className="text-gray-500 text-center mt-8 animate-pulse">Esperando a que se unan...</p>
+            <p className="text-slate-400 text-center mt-12 animate-pulse font-medium">Esperando a que se unan...</p>
           ) : (
             <ul className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {players.map((p) => (
-                <li key={p.id} className="bg-gray-800 p-3 rounded-lg flex items-center gap-3 border border-gray-700">
+                <li key={p.id} className="bg-white p-3 rounded-lg flex items-center gap-3 border border-slate-200 shadow-sm">
                   <span className="text-2xl">{p.avatar || '🧑‍🎓'}</span>
-                  <span className="font-bold truncate">{p.nickname}</span>
+                  <span className="font-semibold text-slate-700 truncate">{p.nickname}</span>
                 </li>
               ))}
             </ul>
@@ -92,7 +85,7 @@ export default function Lobby() {
           <div className="mt-8 text-center">
             <button 
               onClick={handleStartGame}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xl py-4 px-12 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/30 w-full md:w-auto"
+              className="bg-blue-700 hover:bg-blue-800 text-white font-bold text-lg py-4 px-12 rounded-xl transition-colors shadow-md w-full md:w-auto"
             >
               Empezar Partida 🚀
             </button>
@@ -100,7 +93,7 @@ export default function Lobby() {
         )}
         
         {!isHost && (
-          <p className="text-center text-gray-400 mt-8 animate-pulse">
+          <p className="text-center text-slate-500 mt-8 animate-pulse font-medium">
             Esperando a que el profesor inicie la partida...
           </p>
         )}
