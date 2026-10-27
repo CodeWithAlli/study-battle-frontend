@@ -140,15 +140,23 @@ export default function Game() {
           </span>
         </div>
 
-        {/* Barra de Tiempo */}
+               {/* Barra de Tiempo */}
         <div className="mb-6 flex items-center gap-4 bg-white px-4 py-3 border-x border-slate-200">
           <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
             <div 
-              className={`h-full transition-all duration-1000 ease-linear ${timeLeft > 10 ? 'bg-emerald-500' : timeLeft > 5 ? 'bg-orange-500' : 'bg-red-500'}`}
+              className={`h-full transition-all duration-1000 ease-linear ${
+                timeLeft > 10 
+                  ? 'bg-emerald-500' 
+                  : timeLeft > 5 
+                    ? 'bg-orange-500' 
+                    : 'bg-red-600 animate-pulse'
+              }`}
               style={{ width: `${(timeLeft / timerSeconds) * 100}%` }}
             />
           </div>
-          <span className="font-mono text-lg font-bold w-10 text-right text-slate-700">{timeLeft}s</span>
+          <span className={`font-mono text-lg font-bold w-10 text-right ${timeLeft <= 5 ? 'text-red-600 animate-pulse' : 'text-slate-700'}`}>
+            {timeLeft}s
+          </span>
         </div>
 
         {/* Tarjeta de Pregunta */}

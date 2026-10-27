@@ -3,8 +3,16 @@ type PodiumItem = { nickname: string; value: number | string }
 export function Podium({ title, subtitle, items }: {
   title: string; subtitle?: string; items: PodiumItem[]
 }) {
-  const medallas = ['🥇', '🥈', '🥉']
+  // Diferentes íconos según la posición
+  const medallas = ['👑', '🥈', '🥉']
   
+  // Colores de fondo para las tarjetas del podio
+  const fondos = [
+    'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200', // Top 1 (Oro)
+    'bg-slate-50 border-slate-200', // Top 2 (Plata)
+    'bg-orange-50 border-orange-100', // Top 3 (Bronce)
+  ]
+
   return (
     <div className="rounded-2xl bg-white p-6 border border-slate-200 shadow-sm flex flex-col h-full">
       <h3 className="text-xl font-bold text-center text-slate-800 mb-1">{title}</h3>
@@ -15,12 +23,12 @@ export function Podium({ title, subtitle, items }: {
       ) : (
         <ul className="mt-2 space-y-3">
           {items.map((it, i) => (
-            <li key={it.nickname} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
-              <span className="font-medium text-sm md:text-base text-slate-700">
-                <span className="mr-2 text-lg">{medallas[i]}</span> 
+            <li key={it.nickname} className={`flex items-center justify-between p-3 rounded-xl border ${fondos[i] || 'bg-slate-50 border-slate-100'} transition-transform hover:scale-[1.02]`}>
+              <span className="font-semibold text-sm md:text-base text-slate-800 flex items-center gap-2">
+                <span className="text-xl drop-shadow-sm">{medallas[i]}</span> 
                 {it.nickname}
               </span>
-              <span className="font-mono text-blue-700 font-bold bg-blue-50 px-2 py-1 rounded">
+              <span className="font-mono text-blue-800 font-bold bg-white/60 px-3 py-1 rounded-lg">
                 {it.value}
               </span>
             </li>
