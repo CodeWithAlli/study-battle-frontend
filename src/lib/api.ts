@@ -7,15 +7,16 @@ export type Question = {
   justification: string
 }
 
-export async function generarPreguntas(text: string, num_questions: number = 5): Promise<Question[]> {
+export async function generarPreguntas(text: string, num_questions: number = 5, images: string[] = []): Promise<Question[]> {
   const res = await fetch(`${API_URL}/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, num_questions })
+    body: JSON.stringify({ text, num_questions, images }) // <-- ENVIAMOS IMÁGENES
   })
   
   if (!res.ok) {
-    throw new Error('Error generando preguntas. Puede que el servidor esté despertando, intenta de nuevo.')
+    const errorData = await res.json().catch(() => ({}))
+    throw new Error(errorData.detail?.[0]?.msg || 'Error generando preguntas.')
   }
   
   const data = await res.json()

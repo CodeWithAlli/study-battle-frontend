@@ -3,10 +3,11 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { generarCodigoSala } from '../lib/utils'
 import { generarPreguntas } from '../lib/api'
-import { extraerTextoDePDF, extraerTextoDePPTX } from '../lib/extractText'
+import { extraerTextoDePDF ,extraerContenidoDePPTX} from '../lib/extractText'
 
 export default function CreateGame() {
   const [texto, setTexto] = useState('')
+  const [imagenes, setImagenes] = useState<string[]>([])
   const [numPreguntas, setNumPreguntas] = useState(5)
   const [loading, setLoading] = useState(false)
   const [loadingFile, setLoadingFile] = useState(false)
@@ -22,19 +23,24 @@ export default function CreateGame() {
 
     try {
       let textoExtraido = ''
+      let imagenesExtraidas: string[] = []
+
       if (file.name.endsWith('.pdf')) {
         textoExtraido = await extraerTextoDePDF(file)
       } else if (file.name.endsWith('.pptx')) {
-        textoExtraido = await extraerTextoDePPTX(file)
+        const result = await extraerContenidoDePPTX(file)
+        textoExtraido = result.texto
+        imagenesExtraidas = result.imagenes
       } else {
         throw new Error('Formato no soportado. Sube un PDF o PPTX.')
       }
       
-      if (textoExtraido.trim().length < 20) {
-        throw new Error('El archivo no tiene suficiente texto legible.')
+      if (textoExtraido.trim().length < 20 && imagenesExtraidas.length === 0) {
+        throw new Error('El archivo no tiene suficiente texto ni imágenes.')
       }
 
-      setTexto(textoExtraido.slice(0, 15000))
+      setTexto(textoExtraido.slice(0, 10000)) // Recortamos texto para dar espacio a las imágenes
+      setImagenes(imagenesExtraidas)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -50,7 +56,7 @@ export default function CreateGame() {
 
     try {
       const numSeguro = Math.max(1, Math.min(Number(numPreguntas) || 5, 10));
-      const preguntasGeneradas = await generarPreguntas(texto, numSeguro)
+      const preguntasGeneradas = await generarPreguntas(texto, numSeguro, imagenes)
 
       const codigo = generarCodigoSala()
       const { data: game, error: gameError } = await supabase
@@ -92,8 +98,8 @@ export default function CreateGame() {
 
         <div className="flex flex-col gap-4">
           <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-500 transition-colors relative cursor-pointer">
-            <input 
-              type="file" accept=".pdf,.pptx" onChange={handleFileUpload} 
+            <input
+              type="file" accept=".pdf,.pptx" onChange={handleFileUpload}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={loadingFile}
             />
             <p className="text-lg font-medium text-slate-700">
@@ -108,17 +114,17 @@ export default function CreateGame() {
             rows={8}
             className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none text-sm text-slate-700"
           />
-          
+
           <div className="flex items-center gap-4">
             <label className="text-sm font-medium text-slate-600">Número de preguntas:</label>
-            <input 
+            <input
               type="number" min={1} max={10} value={numPreguntas}
               onChange={(e) => setNumPreguntas(Number(e.target.value))}
               className="bg-white border border-slate-300 rounded-lg px-3 py-2 w-20 text-center focus:outline-none focus:border-blue-500 text-slate-800"
             />
           </div>
 
-          <button 
+          <button
             onClick={handleCreate} disabled={loading || loadingFile || texto.length < 20}
             className="mt-4 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2"
           >
