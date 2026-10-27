@@ -9,11 +9,13 @@ export default function Results() {
   const { gameId } = useParams<{ gameId: string }>()
   const { resultados, loading } = useGameResults(gameId ?? null)
 
+  // Verificamos si es profesor y obtenemos el ID del alumno
   const isHost = localStorage.getItem('isHost') === 'true'
   const playerId = localStorage.getItem('playerId')
   const [repaso, setRepaso] = useState<any[]>([])
 
   useEffect(() => {
+    // Si es alumno y hay un ID, cargamos su repaso personal
     if (!isHost && playerId && gameId) {
       obtenerRepasoAlumno(gameId, playerId).then(setRepaso)
     }
@@ -54,15 +56,20 @@ export default function Results() {
           />
         </div>
 
+        {/* TARJETA DE LA TABLA (Aquí estaba el error, faltaba este div de apertura) */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
             <h2 className="text-2xl font-bold text-slate-800">Resumen de Jugadores</h2>
-            <button 
-              onClick={() => exportarResultados(resultados)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-sm transition-colors flex items-center gap-2"
-            >
-              📥 Descargar Reporte (CSV)
-            </button>
+            
+            {/* 🔥 EL BOTÓN SOLO SE MUESTRA SI ES PROFESOR */}
+            {isHost && (
+              <button 
+                onClick={() => exportarResultados(resultados)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-sm transition-colors flex items-center gap-2"
+              >
+                📥 Descargar Reporte (CSV)
+              </button>
+            )}
           </div>
           
           <div className="overflow-x-auto">
@@ -91,7 +98,7 @@ export default function Results() {
           </div>
         </div>
 
-        {/* ESTA ES LA PARTE QUE HACE QUE SALGA EL REVIEW CARD */}
+        {/* TARJETA DE REPASO (Solo para el alumno) */}
         {!isHost && repaso.length > 0 && (
           <ReviewCard items={repaso} />
         )}
