@@ -25,18 +25,15 @@ export default function CreateGame() {
       let textoExtraido = ''
       let imagenesExtraidas: string[] = []
 
-      if (file.name.endsWith('.pdf')) {
-        textoExtraido = await extraerTextoDePDF(file)
-      } else if (file.name.endsWith('.pptx')) {
+      if (file.name.endsWith('.pptx')) {
         const result = await extraerContenidoDePPTX(file)
         textoExtraido = result.texto
         imagenesExtraidas = result.imagenes
-      } else {
-        throw new Error('Formato no soportado. Sube un PDF o PPTX.')
-      }
-      
-      if (textoExtraido.trim().length < 20 && imagenesExtraidas.length === 0) {
-        throw new Error('El archivo no tiene suficiente texto ni imágenes.')
+        
+        // 🔥 ESTO TE DIRÁ QUÉ ESTÁ PASANDO
+        console.log("📄 Texto extraído:", textoExtraido.length, "caracteres")
+        console.log("🖼️ Imágenes extraídas:", imagenesExtraidas.length)
+        console.log("Ejemplo de imagen:", imagenesExtraidas[0]?.substring(0, 50) + "...")
       }
 
       setTexto(textoExtraido.slice(0, 10000)) // Recortamos texto para dar espacio a las imágenes
