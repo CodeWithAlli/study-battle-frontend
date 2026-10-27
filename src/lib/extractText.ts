@@ -8,7 +8,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 
 export async function extraerTextoDePDF(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer()
-  const pdf = await (pdfjsLib as any).getDocument(arrayBuffer).promise
+  
+  // Convertimos a Uint8Array, que es lo que pdfjs-dist espera a veces
+  const uint8Array = new Uint8Array(arrayBuffer)
+  
+  // Le pasamos el objeto { data: ... } que es el formato más seguro
+  const pdf = await (pdfjsLib as any).getDocument({ data: uint8Array }).promise
   let texto = ''
   
   for (let i = 1; i <= pdf.numPages; i++) {
