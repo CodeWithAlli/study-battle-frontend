@@ -11,7 +11,7 @@ export async function generarPreguntas(text: string, num_questions: number = 5, 
   const res = await fetch(`${API_URL}/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, num_questions, images }) // <-- ENVIAMOS IMÁGENES
+    body: JSON.stringify({ text, num_questions, images }) // 'images' ahora puede contener PDFs
   })
   
   if (!res.ok) {

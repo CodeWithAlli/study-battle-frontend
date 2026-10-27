@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { generarCodigoSala } from '../lib/utils'
 import { generarPreguntas } from '../lib/api'
-import { extraerTextoDePDF ,extraerContenidoDePPTX} from '../lib/extractText'
+import { extraerContenidoDePPTX, extraerPDFComoBase64 } from '../lib/extractText'
 
 export default function CreateGame() {
   const [texto, setTexto] = useState('')
@@ -25,28 +25,43 @@ export default function CreateGame() {
       let textoExtraido = ''
       let imagenesExtraidas: string[] = []
 
-      if (file.name.endsWith('.pptx')) {
+  if (file.name.endsWith('.pdf')) {
+    const pdfBase64 = await extraerPDFComoBase64(file);
+        imagenesExtraidas = [`data:application/pdf;base64,${pdfBase64}`]; 
+    textoExtraido = "Archivo PDF adjunto.";
+        console.log("📄 PDF extraído:", textoExtraido.length, "caracteres")
+       } else if (file.name.endsWith('.pptx')) {
         const result = await extraerContenidoDePPTX(file)
         textoExtraido = result.texto
         imagenesExtraidas = result.imagenes
         
-        // 🔥 ESTO TE DIRÁ QUÉ ESTÁ PASANDO
-        console.log("📄 Texto extraído:", textoExtraido.length, "caracteres")
-        console.log("🖼️ Imágenes extraídas:", imagenesExtraidas.length)
-        console.log("Ejemplo de imagen:", imagenesExtraidas[0]?.substring(0, 50) + "...")
+        // 🔥 ESTOS LOGS NOS DIRÁN QUÉ ESTÁ PASANDO
+        console.log("📄 Texto extraído del PPTX:", textoExtraido.length, "caracteres")
+        console.log("🖼️ Imágenes extraídas del PPTX:", imagenesExtraidas.length)
+        
+      } else {
+        throw new Error('Formato no soportado. Sube un PDF o PPTX.')
+      }
+      
+      // Validación: si hay texto o si hay imágenes, dejamos pasar
+      if (textoExtraido.trim().length < 20 && imagenesExtraidas.length === 0) {
+        throw new Error(`El archivo no tiene suficiente texto ni imágenes. (Texto: ${textoExtraido.length} caracteres, Imágenes: ${imagenesExtraidas.length})`)
       }
 
-      setTexto(textoExtraido.slice(0, 10000)) // Recortamos texto para dar espacio a las imágenes
+      setTexto(textoExtraido.slice(0, 10000))
       setImagenes(imagenesExtraidas)
     } catch (err: any) {
       setError(err.message)
+      console.error("Error subiendo archivo:", err)
     } finally {
       setLoadingFile(false)
     }
   }
 
   const handleCreate = async () => {
-    if (texto.trim().length < 20) return setError('El texto debe tener al menos 20 caracteres.')
+    if (texto.trim().length < 20 && imagenes.length === 0) {
+      return setError('El texto debe tener al menos 20 caracteres o debes subir un archivo con imágenes.')
+    }
 
     setLoading(true)
     setError('')
@@ -122,7 +137,7 @@ export default function CreateGame() {
           </div>
 
           <button
-            onClick={handleCreate} disabled={loading || loadingFile || texto.length < 20}
+            onClick={handleCreate} disabled={loading || loadingFile || (texto.length < 20 && imagenes.length === 0)}
             className="mt-4 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2"
           >
             {loading ? '⏳ Generando preguntas...' : 'Generar Preguntas y Crear Sala'}
