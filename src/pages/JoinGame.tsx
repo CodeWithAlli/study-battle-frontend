@@ -46,39 +46,39 @@ export default function JoinGame() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 text-slate-800">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
-        <h2 className="text-3xl font-bold mb-6 text-center text-slate-900">Unirse a Partida</h2>
+      <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-slate-900">Unirse a Partida</h2>
         
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm border border-red-200 text-center">{error}</div>}
+        {error && <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-6 text-sm border border-red-200 text-center font-medium">{error}</div>}
 
-        <form onSubmit={handleJoin} className="flex flex-col gap-4">
+        <form onSubmit={handleJoin} className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Código de la sala</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Código de la sala</label>
             <input 
               type="text" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="Ej: ABC123" maxLength={6} required
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-blue-500 text-slate-800"
+              className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-center text-3xl font-mono tracking-widest focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-slate-800"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Tu nombre</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Tu nombre</label>
             <input 
               type="text" value={nickname} onChange={(e) => setNickname(e.target.value)}
               placeholder="Ej: María" required
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 text-slate-800"
+              className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-slate-800"
             />
           </div>
           
           <button 
             type="submit" disabled={loading}
-            className="mt-4 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold py-3 rounded-xl transition-colors shadow-sm"
+            className="mt-4 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all shadow-md"
           >
             {loading ? 'Entrando...' : 'Entrar a la sala'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <Link to="/" className="text-slate-500 hover:text-blue-700 text-sm font-medium transition-colors">Volver al inicio</Link>
+        <div className="mt-8 text-center">
+          <Link to="/" className="text-slate-500 hover:text-blue-700 text-sm font-bold transition-colors">Volver al inicio</Link>
         </div>
       </div>
     </div>

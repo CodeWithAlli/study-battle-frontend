@@ -45,36 +45,36 @@ export default function Lobby() {
     navigate(`/game/${gameId}`)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Cargando sala...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500 font-medium">Cargando sala...</div>
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 text-slate-800">
-      <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 w-full max-w-2xl">
+      <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-slate-200 w-full max-w-2xl">
         
-        <div className="text-center mb-8 border-b border-slate-100 pb-6">
-          <p className="text-slate-500 font-medium mb-1">Código de la sala</p>
-          <h1 className="text-6xl font-black tracking-widest text-blue-700 my-2 font-mono">
+        <div className="text-center mb-10">
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-sm mb-2">Código de acceso</p>
+          <h1 className="text-7xl font-black tracking-widest text-blue-700 mb-4 font-mono drop-shadow-sm">
             {gameCode || '...'}
           </h1>
-          <p className="text-sm text-slate-400">Comparte este código con tus alumnos</p>
+          <p className="text-slate-400 font-medium">Comparte este código con tus alumnos</p>
         </div>
 
-        <div className="bg-slate-50 rounded-xl p-4 min-h-[200px] border border-slate-200">
-          <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200">
-            <h2 className="text-lg font-bold text-slate-700">Jugadores conectados</h2>
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+        <div className="bg-slate-50 rounded-2xl p-6 min-h-[250px] border-2 border-slate-100">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-extrabold text-slate-800">Jugadores</h2>
+            <span className="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm">
               {players.length} en línea
             </span>
           </div>
 
           {players.length === 0 ? (
-            <p className="text-slate-400 text-center mt-12 animate-pulse font-medium">Esperando a que se unan...</p>
+            <p className="text-slate-400 text-center mt-16 animate-pulse font-bold text-lg">Esperando a que se unan...</p>
           ) : (
-            <ul className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {players.map((p) => (
-                <li key={p.id} className="bg-white p-3 rounded-lg flex items-center gap-3 border border-slate-200 shadow-sm">
-                  <span className="text-2xl">{p.avatar || '🧑‍🎓'}</span>
-                  <span className="font-semibold text-slate-700 truncate">{p.nickname}</span>
+                <li key={p.id} className="bg-white p-4 rounded-xl flex items-center gap-3 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <span className="text-3xl">{p.avatar || '🧑‍🎓'}</span>
+                  <span className="font-bold text-slate-700 truncate">{p.nickname}</span>
                 </li>
               ))}
             </ul>
@@ -82,10 +82,10 @@ export default function Lobby() {
         </div>
 
         {isHost && (
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <button 
               onClick={handleStartGame}
-              className="bg-blue-700 hover:bg-blue-800 text-white font-bold text-lg py-4 px-12 rounded-xl transition-colors shadow-md w-full md:w-auto"
+              className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xl py-5 px-16 rounded-2xl transition-all shadow-lg hover:shadow-blue-500/30 hover:-translate-y-1 w-full md:w-auto"
             >
               Empezar Partida 🚀
             </button>
@@ -93,7 +93,7 @@ export default function Lobby() {
         )}
         
         {!isHost && (
-          <p className="text-center text-slate-500 mt-8 animate-pulse font-medium">
+          <p className="text-center text-slate-500 mt-10 animate-pulse font-bold text-lg">
             Esperando a que el profesor inicie la partida...
           </p>
         )}
