@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function JoinGame() {
@@ -7,7 +7,19 @@ export default function JoinGame() {
   const [nickname, setNickname] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isCodeLocked, setIsCodeLocked] = useState(false) // 🔥 NUEVO ESTADO
+  
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  // 🔥 LEEMOS EL CÓDIGO DE LA URL AL CARGAR LA PÁGINA
+  useEffect(() => {
+    const urlCode = searchParams.get('code')
+    if (urlCode) {
+      setCode(urlCode.toUpperCase())
+      setIsCodeLocked(true) // Bloqueamos el input si viene de un QR
+    }
+  }, [searchParams])
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,25 +65,47 @@ export default function JoinGame() {
 
         <form onSubmit={handleJoin} className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Código de la sala</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2 flex justify-between">
+              <span>Código de la sala</span>
+              {isCodeLocked && <span className="text-emerald-600 text-xs flex items-center gap-1">✓ Escaneado</span>}
+            </label>
             <input 
-              type="text" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="Ej: ABC123" maxLength={6} required
-              className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-center text-3xl font-mono tracking-widest focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-slate-800"
+              type="text" 
+              value={code} 
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="Ej: ABC123" 
+              maxLength={6} 
+              required
+              disabled={isCodeLocked} // 🔥 SE BLOQUEA SI VIENE DEL QR
+              className={`w-full border-2 rounded-xl px-4 py-3 text-center text-3xl font-mono tracking-widest focus:outline-none transition-all ${
+                isCodeLocked 
+                  ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' // Estilo bloqueado
+                  : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-100' // Estilo normal
+              }`}
             />
+            {isCodeLocked && (
+              <p className="text-xs text-slate-400 mt-2 text-center">
+                El código se cargó automáticamente desde el QR.
+              </p>
+            )}
           </div>
+
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">Tu nombre</label>
             <input 
-              type="text" value={nickname} onChange={(e) => setNickname(e.target.value)}
-              placeholder="Ej: María" required
+              type="text" 
+              value={nickname} 
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="Ej: María" 
+              required
               className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-slate-800"
             />
           </div>
           
           <button 
-            type="submit" disabled={loading}
-            className="mt-4 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all shadow-md"
+            type="submit" 
+            disabled={loading}
+            className="mt-4 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all shadow-md hover:shadow-lg"
           >
             {loading ? 'Entrando...' : 'Entrar a la sala'}
           </button>
