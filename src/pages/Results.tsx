@@ -2,48 +2,24 @@ import { useParams, Link } from 'react-router-dom'
 import { useGameResults, obtenerRepasoAlumno } from '../hooks/useGameResults'
 import { exportarResultados } from '../lib/exportCsv'
 import { useState, useEffect } from 'react'
-<<<<<<< HEAD
 import { useGameQuestions } from '../hooks/useGameQuestions'
-=======
->>>>>>> b331072cae36f706456d361501d96c55eb3f4217
 import { GraduationCap, Trophy, BarChart3, HelpCircle, Download, ArrowLeft, Medal, FileText, CheckCircle2 } from 'lucide-react'
 
 export default function Results() {
   const { gameId } = useParams<{ gameId: string }>()
-<<<<<<< HEAD
-  
-  // 🔥 CORRECCIÓN: Solo una vez llamamos al hook de resultados
   const { resultados, loading } = useGameResults(gameId ?? null)
-  
-  // 🔥 LLAMAMOS AL NUEVO HOOK PARA EL PROFESOR
-  const { questions: preguntasProfesor } = useGameQuestions(gameId ?? null) 
-=======
-  const { resultados, loading } = useGameResults(gameId ?? null)
->>>>>>> b331072cae36f706456d361501d96c55eb3f4217
+  const { questions: preguntasProfesor } = useGameQuestions(gameId ?? null)
 
   const isHost = localStorage.getItem('isHost') === 'true'
   const playerId = localStorage.getItem('playerId')
   const [repaso, setRepaso] = useState<any[]>([])
 
   useEffect(() => {
-<<<<<<< HEAD
-    // Si es alumno, carga SU repaso. Si es profe, no carga nada (usa el otro hook).
-=======
-    // 🔥 CORRECCIÓN: Si es alumno, carga SU repaso. Si es profe, NO carga el de nadie.
->>>>>>> b331072cae36f706456d361501d96c55eb3f4217
     if (gameId && !isHost && playerId) {
       obtenerRepasoAlumno(gameId, playerId).then(setRepaso)
     }
   }, [gameId, isHost, playerId])
 
-<<<<<<< HEAD
-=======
-  // Si es profe, necesitamos las preguntas correctas para mostrarle el repaso "limpio"
-  // Pero como el profe no responde, no tiene "repaso" de alumno. 
-  // Para la pantalla del profe, podríamos usar el hook para traer las preguntas y mostrarlas.
-  // (Como no tenemos ese hook a mano, lo dejaremos como "sin datos" para el profe, o le mostraremos un mensaje).
-  
->>>>>>> b331072cae36f706456d361501d96c55eb3f4217
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] text-purple-400 font-bold text-xl">Calculando resultados... ⏳</div>
 
   const ordenDominio = [...resultados].sort((a, b) => b.puntaje - a.puntaje)
@@ -185,8 +161,6 @@ export default function Results() {
               📝 Repaso de la Sesión
             </h2>
             
-<<<<<<< HEAD
-            {/* 🔥 SI ES PROFESOR: Usa las preguntas del nuevo hook */}
             {isHost ? (
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {preguntasProfesor.map((item, index) => (
@@ -208,16 +182,6 @@ export default function Results() {
                 ))}
               </div>
             ) : repaso.length > 0 ? (
-              /* 🔥 SI ES ALUMNO: Muestra su propio repaso */
-=======
-            {/* 🔥 CORRECCIÓN: Si es profe, le mostramos un mensaje. Si es alumno, le mostramos SUS respuestas. */}
-            {isHost ? (
-              <div className="text-center text-slate-400 py-10">
-                <p>El profesor no tiene un repaso personal.</p>
-                <p className="text-sm mt-2">Los alumnos verán aquí su repaso individual con sus respuestas y justificaciones.</p>
-              </div>
-            ) : repaso.length > 0 ? (
->>>>>>> b331072cae36f706456d361501d96c55eb3f4217
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {repaso.map((item, index) => (
                   <div key={index} className={`p-4 rounded-xl border ${item.is_correct ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
@@ -256,8 +220,4 @@ export default function Results() {
       </div>
     </div>
   )
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> b331072cae36f706456d361501d96c55eb3f4217
