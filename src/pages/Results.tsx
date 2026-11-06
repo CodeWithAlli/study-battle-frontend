@@ -1,9 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useGameResults, obtenerRepasoAlumno } from '../hooks/useGameResults'
-import { Podium } from '../components/Podium'
 import { exportarResultados } from '../lib/exportCsv'
 import { useState, useEffect } from 'react'
-import { ReviewCard } from '../components/ReviewCard'
 import { GraduationCap, Trophy, BarChart3, HelpCircle, Download, ArrowLeft, Medal, FileText, CheckCircle2 } from 'lucide-react'
 
 export default function Results() {
@@ -52,9 +50,8 @@ export default function Results() {
 
       <div className="flex-1 w-full max-w-7xl mx-auto p-4 lg:p-8 z-10">
         
-        {/* 🔥 HEADER CON IMAGEN DE FONDO (Ajuste para que se vea completa) */}
+        {/* 🔥 HEADER CON IMAGEN DE FONDO */}
         <div className="relative w-full rounded-3xl overflow-hidden mb-8 border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.15)] bg-[#0B0F19]">
-          {/* La imagen se posiciona de forma centrada y se le da un alto fijo para que no se corte */}
           <div className="absolute inset-0 z-0">
              <img 
                 src="/resultados-bg.png" 
@@ -123,7 +120,7 @@ export default function Results() {
           </div>
         </div>
 
-        {/* 🔥 CONTENIDO PRINCIPAL: TABLA Y REPASO (Ahora ambos ven las preguntas) */}
+        {/* 🔥 CONTENIDO PRINCIPAL: TABLA Y REPASO */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* COLUMNA IZQUIERDA: TABLA DE JUGADORES */}
