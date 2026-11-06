@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { calcularDelta, type Multiplicador } from '../lib/scoring'
 import { MultiplierButtons } from '../components/MultiplierButtons'
 import { OptionButton } from '../components/OptionButton'
+import { GraduationCap, Trophy, BarChart3, HelpCircle, UserCircle2, Timer } from 'lucide-react'
 
 type Question = {
   id: string
@@ -28,11 +29,24 @@ export default function Game() {
   const [isRevealed, setIsRevealed] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // 🔥 ESTADO PARA LA IMAGEN LATERAL
+  const [randomImage, setRandomImage] = useState('')
+
   const isHost = localStorage.getItem('isHost') === 'true'
   const playerId = localStorage.getItem('playerId')
   const playerName = localStorage.getItem('playerName') || (isHost ? 'Profesor' : 'Alumno')
 
+  // Función para cambiar la imagen lateral
+  const elegirImagenAleatoria = () => {
+    // Asegúrate de tener imágenes del 1 al 10 en public/preguntas
+    const numImagen = Math.floor(Math.random() * 10) + 1;
+    setRandomImage(`/preguntas/${numImagen}.png`);
+  }
+
   useEffect(() => {
+    // Elegimos la primera imagen
+    elegirImagenAleatoria()
+
     const fetchGameData = async () => {
       const { data: qs } = await supabase
         .from('questions').select('*').eq('game_id', gameId).order('order_index', { ascending: true })
@@ -63,6 +77,9 @@ export default function Game() {
           setMultiplier(null)
           setSelectedOption(null)
           setIsRevealed(false)
+          
+          // 🔥 CAMBIA LA IMAGEN LATERAL AL AVANZAR
+          elegirImagenAleatoria()
         }
       })
       .subscribe()
@@ -123,106 +140,130 @@ export default function Game() {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-purple-400 font-bold text-xl">Cargando preguntas...</div>
-  if (!preguntaActual) return <div className="min-h-screen flex items-center justify-center text-purple-400 font-bold text-xl">Esperando preguntas...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] text-purple-400 font-bold text-xl">Cargando preguntas...</div>
+  if (!preguntaActual) return <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] text-purple-400 font-bold text-xl">Esperando preguntas...</div>
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white">
-      <div className="w-full max-w-3xl">
+    <div className="flex flex-col min-h-screen bg-transparent text-white overflow-hidden relative">
+      
+      {/* HEADER DE NAVEGACIÓN */}
+      <nav className="flex items-center justify-between px-6 py-3 bg-slate-900/40 border-b border-purple-500/20 backdrop-blur-md z-50">
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" className="w-8 h-8 object-cover rounded-full border border-purple-500" alt="logo"/>
+          <span className="font-extrabold text-xl text-white">Study<span className="text-purple-500">Battle</span></span>
+        </div>
+        <div className="flex items-center gap-6 text-sm font-bold text-slate-300">
+          <span className="flex items-center gap-1 hover:text-purple-400"><GraduationCap className="w-4 h-4"/> Inicio</span>
+          <span className="flex items-center gap-1 hover:text-purple-400"><Trophy className="w-4 h-4"/> Retos</span>
+          <span className="flex items-center gap-1 hover:text-purple-400"><BarChart3 className="w-4 h-4"/> Ranking</span>
+          <span className="flex items-center gap-1 hover:text-purple-400"><HelpCircle className="w-4 h-4"/> Cómo funciona</span>
+        </div>
+      </nav>
+
+      {/* 🔥 CONTENEDOR PRINCIPAL QUE OCUPA TODA LA PANTALLA (Descontando el header) */}
+      <div className="flex-1 w-full flex flex-row items-center justify-center p-4 lg:p-8 gap-8 z-10">
         
-        {/* Cabecera */}
-        <div className="flex justify-between items-center mb-2 bg-slate-900/80 p-4 rounded-t-2xl border border-purple-500/30 shadow-lg backdrop-blur-sm">
-          <span className="font-bold text-slate-300">Pregunta {currentIndex + 1} de {preguntas.length}</span>
-          <span className={`px-4 py-1 rounded-lg text-sm font-bold ${isHost ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
-            {playerName} {isHost ? '(Profesor)' : '(Alumno)'}
-          </span>
+        {/* COLUMNA IZQUIERDA: Imagen lateral (Solo en PC) */}
+        <div className="hidden lg:flex w-1/3 h-full justify-center items-center relative">
+           {/* Resplandor detrás de la imagen */}
+           <div className="absolute inset-0 bg-purple-600/20 blur-[100px] rounded-full w-[80%] h-[80%] m-auto"></div>
+           <img 
+              src={randomImage} 
+              alt="Personaje" 
+              className="w-full max-h-[75vh] object-contain drop-shadow-[0_0_30px_rgba(168,85,247,0.6)] relative z-10" 
+           />
         </div>
 
-        {/* Barra de Tiempo */}
-        <div className="mb-6 flex items-center gap-4 bg-slate-900/80 px-4 py-3 border-x border-purple-500/30">
-          <div className="flex-1 bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700 shadow-inner">
-            <div 
-              className={`h-full transition-all duration-1000 ease-linear ${
-                timeLeft > 10 
-                  ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' 
-                  : timeLeft > 5 
-                    ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]' 
-                    : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.9)] animate-pulse'
-              }`}
-              style={{ width: `${(timeLeft / timerSeconds) * 100}%` }}
-            />
-          </div>
-          <span className={`font-mono text-xl font-black w-12 text-right ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
-            {timeLeft}s
-          </span>
-        </div>
-
-        {/* Tarjeta de Pregunta */}
-        <div className="bg-slate-900/60 backdrop-blur-md p-8 rounded-b-2xl shadow-2xl border-x border-b border-purple-500/30 mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-white drop-shadow-md">{preguntaActual.question_text}</h2>
-
-          {/* VISTA DEL ALUMNO */}
-          {!isHost && (
-            <>
-              {!multiplier && !isRevealed && (
-                <div>
-                  <p className="text-center text-purple-300 mb-4 font-bold text-lg">Elige tu nivel de riesgo:</p>
-                  <MultiplierButtons onSelect={handleSelectMultiplier} disabled={false} />
-                </div>
-              )}
-
-              {multiplier && !isRevealed && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {preguntaActual.options.map((opt, i) => (
-                    <OptionButton 
-                      key={i} text={opt} index={i} selected={selectedOption === i} 
-                      onClick={() => handleSelectOption(i)} disabled={selectedOption !== null} 
-                    />
-                  ))}
-                </div>
-              )}
-
-              {isRevealed && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {preguntaActual.options.map((opt, i) => (
-                    <OptionButton 
-                      key={i} text={opt} index={i} selected={selectedOption === i} 
-                      onClick={() => {}} disabled={true} correctIndex={preguntaActual.correct_index} revealed={true} 
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {/* VISTA DEL PROFE */}
-          {isHost && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {preguntaActual.options.map((opt, i) => (
-                <OptionButton 
-                  key={i} text={opt} index={i} selected={false} onClick={() => {}} disabled={true} 
-                  correctIndex={preguntaActual.correct_index} revealed={isRevealed} 
-                />
-              ))}
+        {/* COLUMNA DERECHA: Juego */}
+        <div className="w-full lg:w-2/3 max-w-4xl flex flex-col items-center justify-center">
+          
+          {/* Barra superior */}
+          <div className="w-full flex justify-between items-center mb-4 bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/30">
+            <span className="font-bold text-slate-300 text-sm md:text-base">Pregunta {currentIndex + 1} de {preguntas.length}</span>
+            
+            <div className="flex-1 max-w-[200px] md:max-w-md mx-4 bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
+              <div 
+                className={`h-full transition-all duration-1000 ease-linear ${
+                  timeLeft > 10 ? 'bg-purple-500' : timeLeft > 5 ? 'bg-orange-500' : 'bg-red-500 animate-pulse'
+                }`}
+                style={{ width: `${(timeLeft / timerSeconds) * 100}%` }}
+              />
             </div>
-          )}
+
+            <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-600 text-sm">
+              <UserCircle2 className="w-4 h-4 text-purple-400" />
+              <span className="font-bold">{playerName}</span>
+            </div>
+            
+            <div className={`flex items-center gap-1 font-mono font-bold text-lg ml-4 ${timeLeft <= 5 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+               <Timer className="w-5 h-5" /> {timeLeft}s
+            </div>
+          </div>
+
+          {/* Tarjeta de Pregunta */}
+          <div className="w-full bg-slate-900/80 backdrop-blur-md p-6 md:p-10 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.15)] border border-purple-500/40 relative">
+            
+            <h2 className="text-xl md:text-3xl font-bold mb-8 text-center text-white leading-relaxed">
+              {preguntaActual.question_text}
+            </h2>
+
+            {/* VISTA DEL ALUMNO */}
+            {!isHost && (
+              <>
+                {!multiplier && !isRevealed && (
+                  <div>
+                    <p className="text-center text-purple-300 mb-4 font-bold text-sm">Elige tu nivel de riesgo:</p>
+                    <MultiplierButtons onSelect={handleSelectMultiplier} disabled={false} />
+                  </div>
+                )}
+
+                {multiplier && !isRevealed && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {preguntaActual.options.map((opt, i) => (
+                      <OptionButton 
+                        key={i} text={opt} index={i} selected={selectedOption === i} 
+                        onClick={() => handleSelectOption(i)} disabled={selectedOption !== null} 
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {isRevealed && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {preguntaActual.options.map((opt, i) => (
+                      <OptionButton 
+                        key={i} text={opt} index={i} selected={selectedOption === i} 
+                        onClick={() => {}} disabled={true} correctIndex={preguntaActual.correct_index} revealed={true} 
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* VISTA DEL PROFE */}
+            {isHost && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {preguntaActual.options.map((opt, i) => (
+                  <OptionButton 
+                    key={i} text={opt} index={i} selected={false} onClick={() => {}} disabled={true} 
+                    correctIndex={preguntaActual.correct_index} revealed={isRevealed} 
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Botón Siguiente (Profesor) */}
+            {isHost && isRevealed && (
+              <div className="mt-10 text-center animate-fade-in">
+                <button onClick={handleNextQuestion} className="bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white font-bold py-3 px-12 rounded-xl transition-all shadow-[0_0_20px_rgba(147,51,234,0.5)] text-lg">
+                  {currentIndex < preguntas.length - 1 ? 'Siguiente Pregunta ➡️' : 'Ver Resultados 🏆'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Botón Siguiente (Profesor) */}
-        {isHost && isRevealed && (
-          <div className="text-center animate-fade-in mt-6">
-            <button onClick={handleNextQuestion} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-lg py-4 px-12 rounded-xl transition-all shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(147,51,234,0.6)]">
-              {currentIndex < preguntas.length - 1 ? 'Siguiente Pregunta ➡️' : 'Ver Resultados 🏆'}
-            </button>
-          </div>
-        )}
-
-        {/* Mensaje Alumno */}
-        {!isHost && isRevealed && (
-          <p className="text-center text-purple-300 font-bold mt-6 animate-pulse text-lg">
-            Esperando a que el profesor pase a la siguiente...
-          </p>
-        )}
       </div>
     </div>
   )
