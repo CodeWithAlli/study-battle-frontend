@@ -40,11 +40,9 @@ export function useGameResults(gameId: string | null) {
 
       const total = questions.length
       const questionIds = questions.map(q => q.id)
-
-      // Filtrar respuestas para que solo sean de esta partida
       const respuestasValidas = (answers || []).filter(a => questionIds.includes(a.question_id))
 
-      // 2. Calcular puntajes
+      // 2. Calcular puntajes base por jugador
       const rows: Resultado[] = players.map(p => {
         const misRespuestas = respuestasValidas.filter(a => a.player_id === p.id)
         const aciertos = misRespuestas.filter(a => a.is_correct).length
@@ -66,7 +64,7 @@ export function useGameResults(gameId: string | null) {
         }
       })
 
-      // 3. Calcular Podios
+      // 3. Calcular Podio de Dominio (Top 3 por puntaje)
       const ordenDominio = [...rows].sort((a, b) => b.puntaje - a.puntaje)
       ordenDominio.slice(0, 3).forEach((r, i) => {
         const target = rows.find(x => x.playerId === r.playerId)!
@@ -74,13 +72,16 @@ export function useGameResults(gameId: string | null) {
         if (i === 0) target.esTop1 = true
       })
 
+      // 4. Calcular Podio de Audacia (Top 3 por vecesX3)
       const ordenAudacia = [...rows].sort((a, b) => b.vecesX3 - a.vecesX3)
       const topAudaciaIds = ordenAudacia.slice(0, 3).map(r => r.playerId)
       rows.forEach(r => { 
-        if (topAudaciaIds.includes(r.playerId) && r.vecesX3 > 0) r.ganoAudacia = true 
+        if (topAudaciaIds.includes(r.playerId) && r.vecesX3 > 0) {
+          r.ganoAudacia = true 
+        }
       })
 
-      // 4. Calcular Extras y Nota
+      // 5. Calcular Extras y Nota final
       rows.forEach(r => {
         r.extras = calcularExtras({
           participo: true,
@@ -89,6 +90,7 @@ export function useGameResults(gameId: string | null) {
           ganoAudacia: r.ganoAudacia,
           todasCorrectas: r.todasCorrectas,
         })
+        
         const notaBase = calcularNota(r.aciertos, total)
         r.nota_sugerida = Math.min(20, notaBase + r.extras)
       })
@@ -102,15 +104,15 @@ export function useGameResults(gameId: string | null) {
 
   return { resultados, loading }
 }
+
+// 🔥 FUNCIÓN PARA EL REPASO DEL ALUMNO (Se queda igual)
 export async function obtenerRepasoAlumno(gameId: string, playerId: string) {
-  // 1. Traer preguntas
   const { data: preguntas } = await supabase
     .from('questions')
     .select('*')
     .eq('game_id', gameId)
     .order('order_index', { ascending: true })
   
-  // 2. Traer respuestas del alumno
   const { data: respuestas } = await supabase
     .from('answers')
     .select('*')
@@ -118,7 +120,6 @@ export async function obtenerRepasoAlumno(gameId: string, playerId: string) {
 
   if (!preguntas) return []
 
-  // 3. Cruzar datos
   return preguntas.map(p => {
     const resp = respuestas?.find(r => r.question_id === p.id)
     
@@ -127,7 +128,6 @@ export async function obtenerRepasoAlumno(gameId: string, playerId: string) {
       options: p.options,
       correct_index: p.correct_index,
       justification: p.justification,
-      // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Leemos 'selected_option'
       player_answer: resp ? resp.selected_option : null, 
       is_correct: resp ? resp.is_correct : false
     }
