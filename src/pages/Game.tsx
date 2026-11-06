@@ -123,50 +123,50 @@ export default function Game() {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Cargando preguntas...</div>
-  if (!preguntaActual) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Esperando preguntas...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-purple-400 font-bold text-xl">Cargando preguntas...</div>
+  if (!preguntaActual) return <div className="min-h-screen flex items-center justify-center text-purple-400 font-bold text-xl">Esperando preguntas...</div>
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-800 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white">
       <div className="w-full max-w-3xl">
         
         {/* Cabecera */}
-        <div className="flex justify-between items-center mb-2 bg-white p-4 rounded-t-2xl border border-slate-200 shadow-sm">
-          <span className="font-bold text-slate-600">Pregunta {currentIndex + 1} de {preguntas.length}</span>
-          <span className={`px-4 py-1 rounded-lg text-sm font-bold ${isHost ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
+        <div className="flex justify-between items-center mb-2 bg-slate-900/80 p-4 rounded-t-2xl border border-purple-500/30 shadow-lg backdrop-blur-sm">
+          <span className="font-bold text-slate-300">Pregunta {currentIndex + 1} de {preguntas.length}</span>
+          <span className={`px-4 py-1 rounded-lg text-sm font-bold ${isHost ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
             {playerName} {isHost ? '(Profesor)' : '(Alumno)'}
           </span>
         </div>
 
         {/* Barra de Tiempo */}
-        <div className="mb-6 flex items-center gap-4 bg-white px-4 py-3 border-x border-slate-200">
-          <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
+        <div className="mb-6 flex items-center gap-4 bg-slate-900/80 px-4 py-3 border-x border-purple-500/30">
+          <div className="flex-1 bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700 shadow-inner">
             <div 
               className={`h-full transition-all duration-1000 ease-linear ${
                 timeLeft > 10 
-                  ? 'bg-emerald-500' 
+                  ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' 
                   : timeLeft > 5 
-                    ? 'bg-orange-500' 
-                    : 'bg-red-600 animate-pulse'
+                    ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]' 
+                    : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.9)] animate-pulse'
               }`}
               style={{ width: `${(timeLeft / timerSeconds) * 100}%` }}
             />
           </div>
-          <span className={`font-mono text-lg font-bold w-10 text-right ${timeLeft <= 5 ? 'text-red-600 animate-pulse' : 'text-slate-700'}`}>
+          <span className={`font-mono text-xl font-black w-12 text-right ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
             {timeLeft}s
           </span>
         </div>
 
         {/* Tarjeta de Pregunta */}
-        <div className="bg-white p-8 rounded-b-2xl shadow-md border-x border-b border-slate-200 mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-slate-900">{preguntaActual.question_text}</h2>
+        <div className="bg-slate-900/60 backdrop-blur-md p-8 rounded-b-2xl shadow-2xl border-x border-b border-purple-500/30 mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-white drop-shadow-md">{preguntaActual.question_text}</h2>
 
           {/* VISTA DEL ALUMNO */}
           {!isHost && (
             <>
               {!multiplier && !isRevealed && (
                 <div>
-                  <p className="text-center text-slate-500 mb-4 font-medium">Elige tu nivel de riesgo:</p>
+                  <p className="text-center text-purple-300 mb-4 font-bold text-lg">Elige tu nivel de riesgo:</p>
                   <MultiplierButtons onSelect={handleSelectMultiplier} disabled={false} />
                 </div>
               )}
@@ -210,8 +210,8 @@ export default function Game() {
 
         {/* Botón Siguiente (Profesor) */}
         {isHost && isRevealed && (
-          <div className="text-center animate-fade-in">
-            <button onClick={handleNextQuestion} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 px-12 rounded-xl transition-colors shadow-md">
+          <div className="text-center animate-fade-in mt-6">
+            <button onClick={handleNextQuestion} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-lg py-4 px-12 rounded-xl transition-all shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(147,51,234,0.6)]">
               {currentIndex < preguntas.length - 1 ? 'Siguiente Pregunta ➡️' : 'Ver Resultados 🏆'}
             </button>
           </div>
@@ -219,7 +219,7 @@ export default function Game() {
 
         {/* Mensaje Alumno */}
         {!isHost && isRevealed && (
-          <p className="text-center text-slate-500 font-medium mt-4 animate-pulse">
+          <p className="text-center text-purple-300 font-bold mt-6 animate-pulse text-lg">
             Esperando a que el profesor pase a la siguiente...
           </p>
         )}

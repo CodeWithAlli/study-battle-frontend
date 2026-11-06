@@ -8,7 +8,7 @@ export default function Lobby() {
   const { gameId } = useParams<{ gameId: string }>()
   const navigate = useNavigate()
   const { players, loading } = useGameChannel(gameId ?? null)
-
+  
   const [isHost, setIsHost] = useState(false)
   const [gameCode, setGameCode] = useState('')
 
@@ -28,8 +28,8 @@ export default function Lobby() {
     })
 
     const channel = supabase.channel(`lobby-status-${gameId}`)
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${gameId}` },
+      .on('postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${gameId}` }, 
         (payload) => {
           if (payload.new.status === 'playing' && !hostStatus) {
             navigate(`/game/${gameId}`)
@@ -46,41 +46,35 @@ export default function Lobby() {
     navigate(`/game/${gameId}`)
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500 font-medium">Cargando sala...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-purple-400 font-bold text-xl">Cargando sala...</div>
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 text-slate-800">
-      <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-slate-200 w-full max-w-2xl">
-
-        <div className="text-center mb-8 border-b border-slate-100 pb-6">
-          <p className="text-slate-500 font-bold uppercase tracking-widest text-sm mb-2">Código de acceso</p>
-          <h1 className="text-7xl font-black tracking-widest text-blue-700 my-3 font-mono drop-shadow-sm">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white">
+      <div className="bg-slate-900/60 backdrop-blur-md p-8 md:p-12 rounded-3xl shadow-2xl border border-purple-500/30 w-full max-w-2xl">
+        
+        <div className="text-center mb-8 border-b border-purple-500/20 pb-8">
+          <p className="text-purple-400 font-bold uppercase tracking-widest text-sm mb-2">Código de acceso</p>
+          <h1 className="text-7xl font-black tracking-widest text-white my-3 font-mono drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             {gameCode || '...'}
           </h1>
-
-          {/* QR MEJORADO */}
+          
           <div className="mt-6 flex flex-col items-center justify-center gap-2">
-            <p className="text-sm font-bold text-slate-500">O escanea este código con tu cámara</p>
-            <div className="p-4 bg-white rounded-2xl shadow-lg border-2 border-slate-100 hover:shadow-xl transition-shadow">
-              <QRCodeSVG
-                value={`${window.location.origin}/join?code=${gameCode}`}
-                size={180}
+            <p className="text-sm font-bold text-slate-300">O escanea este código con tu cámara</p>
+            <div className="p-3 bg-white rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <QRCodeSVG 
+                value={`${window.location.origin}/join?code=${gameCode}`} 
+                size={160} 
                 level="H"
                 includeMargin
               />
             </div>
           </div>
-
-          <p className="text-sm text-slate-400 mt-6 font-medium">Comparte este código con tus alumnos</p>
         </div>
 
-        {/* TARJETA DE JUGADORES MEJORADA */}
-        <div className="bg-slate-50 rounded-2xl p-6 min-h-[250px] border-2 border-slate-100">
+        <div className="bg-slate-800/40 rounded-2xl p-6 min-h-[200px] border border-purple-500/20">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-              👥 Jugadores
-            </h2>
-            <span className="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm">
+            <h2 className="text-xl font-extrabold text-white flex items-center gap-2">👥 Jugadores</h2>
+            <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-4 py-1.5 rounded-full text-sm font-bold">
               {players.length} en línea
             </span>
           </div>
@@ -93,9 +87,9 @@ export default function Lobby() {
           ) : (
             <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {players.map((p) => (
-                <li key={p.id} className="bg-white p-4 rounded-xl flex items-center gap-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+                <li key={p.id} className="bg-slate-800/80 p-4 rounded-xl flex items-center gap-3 border border-purple-500/20 shadow-sm hover:border-purple-500/50 transition-colors">
                   <span className="text-3xl">{p.avatar || '🧑‍🎓'}</span>
-                  <span className="font-bold text-slate-700 truncate">{p.nickname}</span>
+                  <span className="font-bold text-slate-200 truncate">{p.nickname}</span>
                 </li>
               ))}
             </ul>
@@ -104,17 +98,17 @@ export default function Lobby() {
 
         {isHost && (
           <div className="mt-10 text-center">
-            <button
+            <button 
               onClick={handleStartGame}
-              className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xl py-5 px-16 rounded-2xl transition-all shadow-lg hover:shadow-blue-500/30 hover:-translate-y-1 w-full md:w-auto"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xl py-5 px-16 rounded-2xl transition-all shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(147,51,234,0.6)] w-full md:w-auto transform hover:-translate-y-1"
             >
               Empezar Partida 🚀
             </button>
           </div>
         )}
-
+        
         {!isHost && (
-          <p className="text-center text-slate-500 mt-10 animate-pulse font-bold text-lg">
+          <p className="text-center text-purple-300 mt-8 animate-pulse font-bold text-lg">
             Esperando a que el profesor inicie la partida...
           </p>
         )}
