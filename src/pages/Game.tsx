@@ -161,27 +161,28 @@ export default function Game() {
         </div>
       </nav>
 
-      {/* 🔥 CONTENEDOR PRINCIPAL (3 Columnas) */}
-      <div className="flex-1 flex flex-row items-center justify-center p-4 lg:p-8 gap-4 lg:gap-8 z-10 w-full max-w-[1600px] mx-auto">
+      {/* 🔥 CONTENEDOR PRINCIPAL (2 Columnas: Izquierda Imágenes, Derecha Juego) */}
+      <div className="flex-1 flex flex-row items-center justify-center p-4 lg:p-8 gap-8 lg:gap-12 z-10 w-full max-w-[1600px] mx-auto">
         
-        {/* COLUMNA IZQUIERDA: Imagen lateral */}
-        <div className="hidden lg:flex w-[20%] h-full justify-center items-center relative">
-           <div className="absolute inset-0 bg-purple-600/20 blur-[100px] rounded-full w-[80%] h-[80%] m-auto"></div>
+        {/* COLUMNA IZQUIERDA: Imagen lateral (Ocupa casi la mitad de la pantalla) */}
+        <div className="hidden lg:flex w-[45%] h-full justify-center items-center relative">
+           {/* Resplandor detrás de la imagen */}
+           <div className="absolute inset-0 bg-purple-600/20 blur-[120px] rounded-full w-[80%] h-[80%] m-auto"></div>
            <img 
               src={randomImage} 
-              alt="Personaje" 
-              className="w-full max-h-[70vh] object-contain drop-shadow-[0_0_30px_rgba(168,85,247,0.6)] relative z-10" 
+              alt="Personajes" 
+              className="w-full max-h-[75vh] object-contain drop-shadow-[0_0_40px_rgba(168,85,247,0.5)] relative z-10" 
            />
         </div>
 
-        {/* COLUMNA CENTRAL: Juego */}
-        <div className="w-full lg:w-[60%] max-w-4xl flex flex-col items-center justify-center">
+        {/* COLUMNA DERECHA: Juego */}
+        <div className="w-full lg:w-[55%] max-w-3xl flex flex-col items-center justify-center">
           
           {/* Barra superior (Pregunta, tiempo) */}
           <div className="w-full flex flex-wrap justify-between items-center mb-4 bg-slate-900/60 backdrop-blur-md px-4 py-3 rounded-xl border border-purple-500/30 gap-2">
             <span className="font-bold text-slate-300 text-sm md:text-base">Pregunta {currentIndex + 1} de {preguntas.length}</span>
             
-            <div className="flex-1 max-w-[200px] md:max-w-md mx-2 bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
+            <div className="flex-1 max-w-[150px] md:max-w-xs mx-2 bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
               <div 
                 className={`h-full transition-all duration-1000 ease-linear ${
                   timeLeft > 10 ? 'bg-purple-500' : timeLeft > 5 ? 'bg-orange-500' : 'bg-red-500 animate-pulse'
@@ -263,17 +264,6 @@ export default function Game() {
             )}
           </div>
         </div>
-
-        {/* COLUMNA DERECHA: Imagen lateral (Puedes usar otra imagen o la misma) */}
-        <div className="hidden lg:flex w-[20%] h-full justify-center items-center relative">
-           <div className="absolute inset-0 bg-purple-600/20 blur-[100px] rounded-full w-[80%] h-[80%] m-auto"></div>
-           <img 
-              src={randomImage} // Si quieres una imagen distinta a la izquierda, cambia esto por otra ruta
-              alt="Personaje" 
-              className="w-full max-h-[70vh] object-contain drop-shadow-[0_0_30px_rgba(168,85,247,0.6)] relative z-10 transform scale-x-[-1]" 
-           />
-        </div>
-
       </div>
 
       {/* Mensaje Alumno (Cuando espera al profe) */}
