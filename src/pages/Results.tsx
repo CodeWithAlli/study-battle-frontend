@@ -22,8 +22,16 @@ export default function Results() {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] text-purple-400 font-bold text-xl">Calculando resultados... ⏳</div>
 
+  // 🔥 LÓGICA CORREGIDA PARA LOS PODIOS
   const ordenDominio = [...resultados].sort((a, b) => b.puntaje - a.puntaje)
-  const ordenRefuerzo = [...resultados].sort((a, b) => a.puntaje - b.puntaje)
+  
+  // Filtramos a los que NO están en el Top 3 de dominio para el podio de repaso
+  const noTop3 = resultados.filter(r => !r.esTop3)
+  // Ordenamos de menor a mayor puntaje
+  const ordenRefuerzo = [...noTop3].sort((a, b) => a.puntaje - b.puntaje)
+  // Si no hay nadie fuera del Top 3 (porque jugaron 3 o menos), usamos todos los resultados
+  const podioRepaso = ordenRefuerzo.length > 0 ? ordenRefuerzo : resultados
+
   const ordenAudacia = [...resultados].sort((a, b) => b.vecesX3 - a.vecesX3)
 
   return (
@@ -62,6 +70,7 @@ export default function Results() {
 
         {/* LOS 3 PODIOS */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
+          {/* PODIO DOMINIO */}
           <div className="bg-slate-900/70 backdrop-blur-md border border-yellow-500/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-500/10 rounded-bl-full -mr-4 -mt-4"></div>
             <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500"/> Dominio del tema</h3>
@@ -78,12 +87,13 @@ export default function Results() {
             </ul>
           </div>
 
+          {/* PODIO REPASO (Ahora usa podioRepaso) */}
           <div className="bg-slate-900/70 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4"></div>
             <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2"><FileText className="w-5 h-5 text-blue-500"/> Necesitan repasar</h3>
             <p className="text-sm text-slate-400 mb-4">Una mano no viene mal</p>
             <ul className="space-y-3">
-              {ordenRefuerzo.slice(0, 3).map((r, i) => (
+              {podioRepaso.slice(0, 3).map((r, i) => (
                 <li key={r.playerId} className="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">
                   <span className="font-semibold text-sm flex items-center gap-2">
                     <Medal className={`w-4 h-4 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-300' : 'text-orange-400'}`} /> {r.nickname}
@@ -94,6 +104,7 @@ export default function Results() {
             </ul>
           </div>
 
+          {/* PODIO AUDACIA */}
           <div className="bg-slate-900/70 backdrop-blur-md border border-purple-500/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-bl-full -mr-4 -mt-4"></div>
             <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-purple-500"/> Alta apuesta</h3>
