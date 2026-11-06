@@ -13,18 +13,17 @@ export default function Results() {
   const [repaso, setRepaso] = useState<any[]>([])
 
   useEffect(() => {
-    // 🔥 CAMBIO: Ahora el profesor también carga el repaso general (usando el ID del primer jugador o el suyo si jugó)
-    // Para simplificar, si es profesor, cargamos el repaso del primer jugador de la lista para mostrarlo como ejemplo.
-    // Si es alumno, cargamos el suyo propio.
-    if (gameId) {
-      if (isHost && resultados.length > 0) {
-        obtenerRepasoAlumno(gameId, resultados[0].playerId).then(setRepaso)
-      } else if (!isHost && playerId) {
-        obtenerRepasoAlumno(gameId, playerId).then(setRepaso)
-      }
+    // 🔥 CORRECCIÓN: Si es alumno, carga SU repaso. Si es profe, NO carga el de nadie.
+    if (gameId && !isHost && playerId) {
+      obtenerRepasoAlumno(gameId, playerId).then(setRepaso)
     }
-  }, [gameId, isHost, playerId, resultados])
+  }, [gameId, isHost, playerId])
 
+  // Si es profe, necesitamos las preguntas correctas para mostrarle el repaso "limpio"
+  // Pero como el profe no responde, no tiene "repaso" de alumno. 
+  // Para la pantalla del profe, podríamos usar el hook para traer las preguntas y mostrarlas.
+  // (Como no tenemos ese hook a mano, lo dejaremos como "sin datos" para el profe, o le mostraremos un mensaje).
+  
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] text-purple-400 font-bold text-xl">Calculando resultados... ⏳</div>
 
   const ordenDominio = [...resultados].sort((a, b) => b.puntaje - a.puntaje)
@@ -50,14 +49,10 @@ export default function Results() {
 
       <div className="flex-1 w-full max-w-7xl mx-auto p-4 lg:p-8 z-10">
         
-        {/* 🔥 HEADER CON IMAGEN DE FONDO */}
+        {/* HEADER CON IMAGEN DE FONDO */}
         <div className="relative w-full rounded-3xl overflow-hidden mb-8 border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.15)] bg-[#0B0F19]">
           <div className="absolute inset-0 z-0">
-             <img 
-                src="/resultados-bg.png" 
-                alt="Resultados" 
-                className="w-full h-full object-cover object-[center_20%] opacity-70" 
-             />
+             <img src="/resultados-bg.png" alt="Resultados" className="w-full h-full object-cover object-[center_20%] opacity-70" />
              <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/60 to-transparent"></div>
           </div>
           
@@ -69,7 +64,7 @@ export default function Results() {
           </div>
         </div>
 
-        {/* 🔥 LOS 3 PODIOS */}
+        {/* LOS 3 PODIOS */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <div className="bg-slate-900/70 backdrop-blur-md border border-yellow-500/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-500/10 rounded-bl-full -mr-4 -mt-4"></div>
@@ -120,22 +115,16 @@ export default function Results() {
           </div>
         </div>
 
-        {/* 🔥 CONTENIDO PRINCIPAL: TABLA Y REPASO */}
+        {/* CONTENIDO PRINCIPAL: TABLA Y REPASO */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* COLUMNA IZQUIERDA: TABLA DE JUGADORES */}
           <div className="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-700/50 p-6 shadow-xl">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-700/50 pb-4">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                 Resumen de Jugadores
-              </h2>
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">Resumen de Jugadores</h2>
               
-              {/* Botón CSV solo para el Profesor */}
               {isHost && (
-                <button 
-                  onClick={() => exportarResultados(resultados)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-colors flex items-center gap-2 text-sm"
-                >
+                <button onClick={() => exportarResultados(resultados)} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-colors flex items-center gap-2 text-sm">
                   <Download className="w-4 h-4"/> Descargar Reporte (CSV)
                 </button>
               )}
@@ -170,14 +159,19 @@ export default function Results() {
             </div>
           </div>
 
-          {/* COLUMNA DERECHA: REPASO DE LA SESIÓN (Visible para AMBOS) */}
+          {/* COLUMNA DERECHA: REPASO DE LA SESIÓN */}
           <div className="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-purple-500/30 p-6 shadow-xl">
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               📝 Repaso de la Sesión
             </h2>
             
-            {/* 🔥 AQUÍ ESTÁ EL CAMBIO: Quitamos el "isHost" para que el profe también vea las preguntas */}
-            {repaso.length > 0 ? (
+            {/* 🔥 CORRECCIÓN: Si es profe, le mostramos un mensaje. Si es alumno, le mostramos SUS respuestas. */}
+            {isHost ? (
+              <div className="text-center text-slate-400 py-10">
+                <p>El profesor no tiene un repaso personal.</p>
+                <p className="text-sm mt-2">Los alumnos verán aquí su repaso individual con sus respuestas y justificaciones.</p>
+              </div>
+            ) : repaso.length > 0 ? (
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {repaso.map((item, index) => (
                   <div key={index} className={`p-4 rounded-xl border ${item.is_correct ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
@@ -201,7 +195,7 @@ export default function Results() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-slate-400 py-10">No hay datos de repaso disponibles.</p>
+              <p className="text-center text-slate-400 py-10">No hay datos de repaso disponibles para tu usuario.</p>
             )}
           </div>
 
